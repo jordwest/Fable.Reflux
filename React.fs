@@ -24,7 +24,7 @@ let makeUseSelector (useStore: UseStoreFn<'state, 'action>) (selector: 'state ->
     (fun () ->
       let listenerId =
         store.subscribe
-          (fun newState ->
+          (fun newState _ ->
             let selectorState = newState |> selector
             if selectorState <> state then
               setState (selectorState))
