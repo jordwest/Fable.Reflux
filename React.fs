@@ -19,6 +19,8 @@ let makeUseSelector (useStore: UseStoreFn<'state, 'action>) (selector: 'state ->
 
   let (state, setState) =
     React.useState (store.getState () |> selector)
+  
+  let prevState = React.useRef<'a>(state)
 
   React.useEffect (
     (fun () ->
@@ -26,8 +28,10 @@ let makeUseSelector (useStore: UseStoreFn<'state, 'action>) (selector: 'state ->
         store.subscribe
           (fun newState _ ->
             let selectorState = newState |> selector
-            if selectorState <> state then
-              setState (selectorState))
+            if selectorState <> prevState.current then
+              setState (selectorState)
+            prevState.current <- selectorState
+          )
 
       { new IDisposable with
           member this.Dispose() = store.unsubscribe (listenerId) }),
@@ -35,3 +39,4 @@ let makeUseSelector (useStore: UseStoreFn<'state, 'action>) (selector: 'state ->
   )
 
   state
+
